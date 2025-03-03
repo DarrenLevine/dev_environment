@@ -1,6 +1,7 @@
 """train a Q-learning agent and play a game of tic tac toe against it"""
 import copy
 import random
+from collections import defaultdict
 
 _all_winning_combos = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
@@ -231,7 +232,8 @@ class q_learning():
         self.R = 0.1  # learning rate
         self.invR = 1. - self.R  # inverse learning rate
         self.D = 1.  # discount factor
-        self.Q = {}
+        self.Q = defaultdict(lambda: defaultdict(lambda: 0.))
+
         # must conform to: opponent_state = opponent_state_predictor(state, action)
         self.opponent_state_predictor = opponent_state_predictor
 
@@ -257,14 +259,7 @@ class q_learning():
                 future_reward = max(future_reward, self.Q[state][action])
         return future_reward - future_opponent_reward
 
-    def ensure_Q_is_initialized(self, state, action, init_val):
-        if state not in self.Q:
-            self.Q[state] = {}
-        if action not in self.Q[state]:
-            self.Q[state][action] = init_val
-
     def learn(self, state, action, reward):
-        self.ensure_Q_is_initialized(state, action, 0.)
         self.Q[state][action] = self.invR * self.Q[state][action] + \
             self.R * (reward + self.D * self.estimate_future_max_q(state, action))
 
